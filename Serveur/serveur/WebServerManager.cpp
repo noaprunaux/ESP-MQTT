@@ -1,18 +1,28 @@
 #include "WebServerManager.h"
+#include <LittleFS.h> // Assurez-vous d'inclure LittleFS si nécessaire
 
+// Initialisation du WebSocket
 AsyncWebSocket WebServerManager::ws("/ws");
 
 void WebServerManager::setup(AsyncWebServer& server, const char* serverIndex) {
-    if(!LittleFS.begin()){
+    if (!LittleFS.begin()) {
         Serial.println("An Error has occurred while mounting LittleFS");
         return;
     }
-    
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(LittleFS, "/index.html", "text/html");
     });
 
-    // Votre code existant pour configurer d'autres routes
+    // Nouvelle route pour la page 'connected.html'
+    server.on("/connected", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(LittleFS, "/connected.html", "text/html");
+    });
+
+    // Configuration du WebSocket
+    ws.onEvent(onWsEvent);
+    server.addHandler(&ws);
+
     server.begin();
 }
 
