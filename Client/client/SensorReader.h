@@ -2,6 +2,10 @@
 #define SENSORREADER_H
 
 #include <Arduino.h>
+#include <ESP8266WiFi.h> 
+#include "SensorDataSender.h"
+#include <ESP8266HTTPClient.h>
+#include <WiFiClient.h>
 #include <Wire.h>
 
 // Adresses I2C

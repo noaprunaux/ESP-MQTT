@@ -1,38 +1,27 @@
 #include "WebServerManager.h"
-#include <LittleFS.h> // Assurez-vous d'inclure LittleFS si nécessaire
 
-// Initialisation du WebSocket
-AsyncWebSocket WebServerManager::ws("/ws");
+ESP8266WebServer WebServerManager::server(80);
 
-void WebServerManager::setup(AsyncWebServer& server, const char* serverIndex) {
-    if (!LittleFS.begin()) {
-        Serial.println("An Error has occurred while mounting LittleFS");
-        return;
-    }
-
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/index.html", "text/html");
+void WebServerManager::setupServer() {
+    server.on("/", HTTP_GET, []() {
+        WebServerManager::server.send(200, "text/html", "<!DOCTYPE HTML><html><head><title>ESP8266 Pression Capteur Monitoring</title></head><body><h1>Monitoring de la Pression</h1><p>Page de monitoring...</p></body></html>");
     });
 
-    // Nouvelle route pour la page 'connected.html'
-    server.on("/connected", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(LittleFS, "/connected.html", "text/html");
+    // Mettez ici la configuration de votre serveur, par exemple:
+    server.on("/post-data", HTTP_POST, []() {
+        if (server.hasArg("plain")) {
+            String data = server.arg("plain");
+            Serial.println(data);
+            server.send(200, "text/plain", "Donnees recues");
+        } else {
+            server.send(200, "text/plain", "Aucune donnee recue");
+        }
     });
-
-    // Configuration du WebSocket
-    ws.onEvent(onWsEvent);
-    server.addHandler(&ws);
 
     server.begin();
+    Serial.println("Serveur HTTP demarre");
 }
 
-
-void WebServerManager::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
-    if (type == WS_EVT_CONNECT) {
-        Serial.println("Websocket client connection received");
-    } else if (type == WS_EVT_DISCONNECT) {
-        Serial.println("Client disconnected");
-    } else if (type == WS_EVT_DATA) {
-        // Ici, vous pouvez gérer les données reçues du client si nécessaire
-    }
+void WebServerManager::handleClient() {
+    server.handleClient();
 }

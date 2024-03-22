@@ -1,13 +1,13 @@
-#ifndef HTTPCLIENTMANAGER_H
-#define HTTPCLIENTMANAGER_H
+#ifndef HTTPClientManager_h
+#define HTTPClientManager_h
 
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
+#include <ESP8266WiFi.h> 
 
 class HTTPClientManager {
 public:
-    String httpGETRequest(const char* serverName);
-    String httpPOSTRequest(const char* serverName, const String& payload);
+    static void sendPostRequest(const String& url, const String& payload);
 };
 
 #endif

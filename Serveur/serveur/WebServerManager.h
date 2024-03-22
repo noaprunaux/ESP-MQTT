@@ -1,15 +1,13 @@
-#ifndef WEBSERVERMANAGER_H // Garde d'inclusion pour éviter l'inclusion récursive
-#define WEBSERVERMANAGER_H
+#ifndef WebServerManager_h
+#define WebServerManager_h
 
-#include <ESPAsyncWebServer.h>
-#include <FS.h>
+#include <ESP8266WebServer.h>
 
 class WebServerManager {
 public:
-    static void setup(AsyncWebServer& server, const char* serverIndex);
-    static void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
-private:
-    static AsyncWebSocket ws; // Déclaration du WebSocket
+    static void setupServer();
+    static void handleClient();
+    static ESP8266WebServer server;
 };
 
-#endif // WEBSERVERMANAGER_H
+#endif

@@ -3,12 +3,13 @@
 
 #include <ESP8266WiFi.h>
 
+
 class WiFiConnector {
-  public:
+public:
     WiFiConnector(const char* ssid, const char* password);
     void connectToWiFi();
-  
-  private:
+
+private:
     const char* _ssid;
     const char* _password;
 };
