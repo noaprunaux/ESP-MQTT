@@ -5,16 +5,20 @@
 
 SensorDataSender::SensorDataSender(const char* serverUrl) : _serverUrl(serverUrl) {}
 
-void SensorDataSender::sendSensorData(int sensorValue) {
+void SensorDataSender::sendSensorData(int16_t sensorValues[], int numSensors) {
     if (WiFi.status() == WL_CONNECTED) {
         WiFiClient client;
         HTTPClient http;
-        http.begin(client, _serverUrl); // Modification ici
+        http.begin(client, _serverUrl); // Utilisez la nouvelle API HTTPClient avec WiFiClient
         http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        String httpRequestData = "value=" + String(sensorValue);
-        int httpResponseCode = http.POST(httpRequestData);
+        String httpRequestData = "values=";
+        for (int i = 0; i < numSensors; ++i) {
+            if (i > 0) httpRequestData += ","; // Séparer les valeurs par une virgule
+            httpRequestData += String(sensorValues[i]);
+        }
 
+        int httpResponseCode = http.POST(httpRequestData);
         Serial.print("HTTP Response code: ");
         Serial.println(httpResponseCode);
 

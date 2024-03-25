@@ -1,40 +1,60 @@
 #include "SensorReader.h"
 
-int16_t readSensors() {
-  unsigned long currentTime = millis();
-  int currentSensor = 0;
-  int16_t sensorValue = 0;
 
-  // Commence la transmission I2C à l'adresse du capteur
-  Wire.beginTransmission(SENSOR_ADDR);
-  Wire.write(SENSOR_MEMORY_ADDR); // Sélectionne l'adresse mémoire du capteur
-  if (Wire.endTransmission() != 0) {
-    Serial.println("Erreur lors de la sélection de l'adresse mémoire du capteur");
-    return 0; // Retourne 0 en cas d'erreur
-  }
+int16_t sensorData[NUM_SENSORS];
 
-  // Débuter une nouvelle transmission avant d'écrire le canal
-  Wire.beginTransmission(SENSOR_ADDR);
-  Wire.write(1 << currentSensor); // Sélectionne le canal du capteur
-  if (Wire.endTransmission() != 0) {
-    Serial.println("Erreur lors de la sélection du canal");
-    return 0; // Retourne 0 en cas d'erreur
-  }
+#define TCA9548A_ADDR 0x70
+#define SENSOR_ADDR   0x6C
+#define SENSOR_MEMORY_ADDR 0x30
+#define NUM_SENSORS 8
 
-  // Demande la lecture des données du capteur
-  Wire.requestFrom(SENSOR_ADDR, 2); // Demande 2 octets
-  if (Wire.available() >= 2) {
-    sensorValue = Wire.read() | (Wire.read() << 8); // Lit la valeur du capteur
-  } else {
-    // Si moins de 2 octets sont disponibles, retourne 0 ou une valeur d'erreur spécifique
-    return 0;
-  }
 
-  // Optionnellement, afficher les données lues sur la console série
-  //Serial.print("Temps: ");
-  //Serial.print(currentTime);
-  //Serial.print(" ms, Valeur du capteur: ");
-  //Serial.println(sensorValue);
+String concat_val = "";
+Ticker timer;
 
-  return sensorValue; // Retourne la valeur lue du capteur
+void setupSensorReader() {
+    Serial.begin(115200);
+    Wire.begin();
+    Wire.setClock(340000);
+
+    Wire.beginTransmission(TCA9548A_ADDR);
+    Wire.write(0xFF);
+    Wire.endTransmission();
+
+    timer.attach_ms(2, readSensors);
+}
+
+void readSensors() {
+    unsigned long currentTime = millis();
+    concat_val = "";
+
+    Wire.beginTransmission(TCA9548A_ADDR);
+    Wire.write(0xFF); // Activer tous les canaux, si nécessaire à chaque lecture
+    Wire.endTransmission();
+
+    for (int currentSensor = 0; currentSensor < NUM_SENSORS; currentSensor++) {
+        Wire.beginTransmission(TCA9548A_ADDR);
+        Wire.write(1 << currentSensor);
+        if (Wire.endTransmission() != 0) {
+            Serial.println("Erreur lors de la sélection du canal");
+            continue;
+        }
+
+        Wire.beginTransmission(SENSOR_ADDR);
+        Wire.write(SENSOR_MEMORY_ADDR);
+        if (Wire.endTransmission() != 0) {
+            Serial.println("Erreur lors de la sélection de l'adresse mémoire du capteur");
+            continue;
+        }
+
+        Wire.requestFrom(SENSOR_ADDR, 2);
+        if (Wire.available() >= 2) {
+            int16_t sensorValue = Wire.read() | (Wire.read() << 8);
+            concat_val += String(sensorValue) + " ";
+        }
+    }
+
+    Serial.print(concat_val);
+    Serial.print(" ");
+    Serial.println(currentTime);
 }

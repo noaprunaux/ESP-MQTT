@@ -1,5 +1,5 @@
 #include "WiFiManager.h"
-#include <ESP8266WiFi.h>
+
 
 const char* WiFiManager::ssid = "ESP8266-Access-Point";       // SSID du WiFi
 const char* WiFiManager::password = "123456789";              // MDP du WiFi

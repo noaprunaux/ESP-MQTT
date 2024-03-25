@@ -1,7 +1,4 @@
 #include "HTTPClientManager.h"
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <WiFiClient.h>
 
 void HTTPClientManager::sendPostRequest(const String& url, const String& payload) {
     if (WiFi.status() == WL_CONNECTED) {
